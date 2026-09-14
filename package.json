@@ -1,0 +1,31 @@
+{
+  "name": "personal-agent",
+  "private": true,
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "packageManager": "pnpm@9.15.9",
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "dev:api": "pnpm --filter @personal-agent/api dev",
+    "dev:worker": "pnpm --filter @personal-agent/api dev:worker",
+    "dev:mobile": "pnpm --filter @personal-agent/mobile start",
+    "build": "turbo run build",
+    "db:seed": "pnpm --filter @personal-agent/api db:seed",
+    "test": "turbo run test",
+    "test:watch": "pnpm --filter @personal-agent/api test:watch",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "docker:up": "docker compose -f infra/docker-compose.yml up -d",
+    "docker:down": "docker compose -f infra/docker-compose.yml down",
+    "prepare": "husky || true"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0",
+    "prettier": "^3.4.2",
+    "husky": "^9.1.7",
+    "typescript": "^5.7.2"
+  }
+}
