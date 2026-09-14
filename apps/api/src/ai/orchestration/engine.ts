@@ -1,4 +1,4 @@
-import { ConversationModel, MessageModel, UserModel } from '../../db/models';
+import { MessageModel, UserModel } from '../../db/models';
 import { getAIProvider } from '../providers/factory';
 import type { AIMessage } from '../providers/types';
 import { getToolRegistry } from '../tools';

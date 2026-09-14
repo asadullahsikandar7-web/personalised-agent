@@ -183,6 +183,24 @@ export default function HomeScreen() {
           <Badge label={musicQuery.data?.state ?? 'idle'} tone={musicQuery.data?.state === 'playing' ? 'success' : 'neutral'} />
         </Card>
 
+        <SectionHeader title="Recently used tools" onPress={() => router.push('/(app)/activity')} />
+        {activityQuery.data && activityQuery.data.items.length > 0 ? (
+          <View className="gap-2 mb-6">
+            {activityQuery.data.items.map((entry) => (
+              <Card key={entry.id} className="flex-row items-center justify-between">
+                <Text className={`${tw.textPrimary} flex-1 pr-2`} numberOfLines={1}>
+                  {entry.description}
+                </Text>
+                <Text className={`${tw.textMuted} text-xs`}>{new Date(entry.createdAt).toLocaleTimeString()}</Text>
+              </Card>
+            ))}
+          </View>
+        ) : (
+          <Card className="mb-6">
+            <Text className={tw.textMuted}>Nothing yet - actions your agent takes will show up here.</Text>
+          </Card>
+        )}
+
         <SectionHeader title="Agent status" />
         <Card className="flex-row items-center gap-3">
           <View className="w-2.5 h-2.5 rounded-full bg-light-success dark:bg-dark-success" />

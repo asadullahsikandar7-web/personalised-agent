@@ -1,4 +1,4 @@
-import { ConversationModel, MessageModel, type ConversationDoc } from '../../db/models';
+import { ConversationModel, type ConversationDoc } from '../../db/models';
 import { AppError } from '../../utils/errors';
 import { paginateResult } from '../../utils/pagination';
 import type { ConversationSummary } from '@personal-agent/shared';

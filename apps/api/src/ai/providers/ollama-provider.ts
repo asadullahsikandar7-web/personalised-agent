@@ -37,7 +37,7 @@ export class OllamaProvider implements AIModelProvider {
 
   async generateResponse(input: AIRequest): Promise<AIResponse> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.options.timeoutMs ?? 60_000);
+    const timeout = setTimeout(() => controller.abort(), this.options.timeoutMs ?? 120_000);
 
     try {
       const res = await fetch(`${this.options.baseUrl}/api/chat`, {
@@ -54,6 +54,10 @@ export class OllamaProvider implements AIModelProvider {
                 function: { name: tool.name, description: tool.description, parameters: tool.parameters },
               }))
             : undefined,
+          // Disable "thinking" mode on hybrid-reasoning models (e.g. qwen3): for tool-calling
+          // duties we want a fast, direct decision, not a long visible reasoning trace. Ollama
+          // ignores this option on models that don't support it.
+          think: false,
           options: { temperature: input.temperature ?? 0.4 },
         }),
       });

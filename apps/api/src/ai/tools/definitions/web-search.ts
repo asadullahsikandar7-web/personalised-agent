@@ -18,7 +18,7 @@ export const webSearchTool = defineTool({
   description: 'Search the public web for up-to-date information. Only available when a web search provider is configured on the backend.',
   inputSchema,
   permissionLevel: 'restricted',
-  async execute(input) {
+  async execute() {
     if (!env.WEB_SEARCH_PROVIDER || !env.WEB_SEARCH_API_KEY) {
       return {
         success: false,

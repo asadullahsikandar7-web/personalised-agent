@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { View, Text, Pressable, ScrollView, TextInput, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { useSharedValue, useAnimatedStyle, withRepeat, withTiming, withSequence } from 'react-native-reanimated';
@@ -49,7 +49,8 @@ export default function AssistantScreen() {
       setErrorMessage(voice.errorMessage);
       setPhase('idle');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Deliberately only re-run on voice.status changes - voice.transcript/phase are read inside
+    // but including them would re-fire this transition logic on every transcript keystroke.
   }, [voice.status]);
 
   useEffect(() => {

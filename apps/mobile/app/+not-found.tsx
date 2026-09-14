@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { Text } from 'react-native';
 import { Link } from 'expo-router';
 import { tw } from '../src/theme/tw';
 import { SafeAreaView } from 'react-native-safe-area-context';

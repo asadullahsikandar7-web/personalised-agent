@@ -9,7 +9,6 @@ import {
 import { parseOrThrow } from '../../middleware/validate';
 import { getUserId } from '../../middleware/current-user';
 import { sendSuccess } from '../../utils/response';
-import { AppError } from '../../utils/errors';
 import { isProduction } from '../../config/env';
 import * as authService from './service';
 import { getUserOrThrow } from '../users/service';

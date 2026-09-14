@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, ScrollView } from 'react-native';
+import { Text, ScrollView } from 'react-native';
 import { tw } from '../../src/theme/tw';
 import { Card, Button, TextField } from '../../src/components';
 import { useCurrentUser } from '../../src/hooks/useCurrentUser';

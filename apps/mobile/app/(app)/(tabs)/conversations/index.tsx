@@ -3,7 +3,7 @@ import { View, Text, FlatList, TextInput, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { tw } from '../../../../src/theme/tw';
-import { Card, EmptyState, ErrorState, LoadingState, Button } from '../../../../src/components';
+import { Card, EmptyState, ErrorState, LoadingState } from '../../../../src/components';
 import { useConversations } from '../../../../src/hooks/useConversations';
 import { useSendAgentMessage } from '../../../../src/hooks/useSendAgentMessage';
 

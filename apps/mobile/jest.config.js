@@ -1,9 +1,7 @@
 module.exports = {
   preset: 'jest-expo',
-  transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|nativewind|react-native-css-interop)/)',
-  ],
-  setupFilesAfterEach: [],
-  setupFiles: ['./jest.setup.js'],
+  // Rely on jest-expo's own transformIgnorePatterns (tuned for the installed Expo/RN version) -
+  // overriding it here previously broke parsing of @react-native/js-polyfills after an RN bump.
+  setupFilesAfterEnv: ['./jest.setup.js'],
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts'],
 };

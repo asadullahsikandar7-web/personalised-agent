@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, FlatList, Pressable, Modal, TextInput, ScrollView } from 'react-native';
+import { View, Text, FlatList, Pressable, Modal, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import type { TaskDTO, TaskPriority } from '@personal-agent/shared';
 import { TASK_PRIORITIES } from '@personal-agent/shared';
