@@ -1,0 +1,56 @@
+{
+  "expo": {
+    "name": "Personal Agent",
+    "slug": "personal-agent",
+    "version": "1.0.0",
+    "scheme": "personalagent",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.personalagent.app"
+    },
+    "android": {
+      "package": "com.personalagent.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#6C5CE7",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "RECORD_AUDIO",
+        "POST_NOTIFICATIONS"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-audio",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/android-icon-foreground.png",
+          "color": "#6C5CE7"
+        }
+      ],
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow Personal Agent to use the microphone so you can talk to your assistant.",
+          "speechRecognitionPermission": "Allow Personal Agent to use speech recognition to transcribe what you say."
+        }
+      ]
+    ],
+    "extra": {
+      "router": {}
+    }
+  }
+}
