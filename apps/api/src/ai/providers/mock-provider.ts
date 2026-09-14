@@ -118,13 +118,45 @@ function buildFallbackReply(text: string): string {
   return `I heard: "${text}". I can create tasks and reminders, remember information, check your schedule, control basic music playback, or just chat. What would you like me to do?`;
 }
 
-function extractReminder(text: string): { title: string; scheduledAtText: string } {
-  const atMatch = text.match(/\bat\s+([\d: apmAPM]+)/);
-  const forMatch = text.match(/(?:remind me to|reminder to)\s+(.*?)(?:\s+at\s+|\s+tomorrow|\s+today|$)/i);
+function extractReminder(text: string): { title: string; scheduledAt: string } {
+  const forMatch = text.match(/(?:remind me to|reminder to)\s+(.*?)(?:\s+at\s+|\s+every\s+|\s+tomorrow|\s+today|$)/i);
   return {
     title: forMatch?.[1]?.trim() || text,
-    scheduledAtText: atMatch?.[1]?.trim() || 'unspecified',
+    scheduledAt: parseTimeExpression(text).toISOString(),
   };
+}
+
+/**
+ * Lightweight natural-language time parser used only by MockProvider (a real LLM would return
+ * a structured ISO datetime directly via tool calling). Understands "at H(:MM) AM/PM" plus an
+ * optional "tomorrow"/"today", defaulting to the next occurrence of that time if it has already
+ * passed today. This is best-effort NLU, not a full date parser - see docs/known-platform-limitations.md.
+ */
+function parseTimeExpression(text: string): Date {
+  const now = new Date();
+  const result = new Date(now);
+
+  const timeMatch = text.match(/\b(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/i);
+  if (timeMatch) {
+    let hour = Number(timeMatch[1]);
+    const minute = timeMatch[2] ? Number(timeMatch[2]) : 0;
+    const meridiem = timeMatch[3]?.toLowerCase();
+    if (meridiem === 'pm' && hour < 12) hour += 12;
+    if (meridiem === 'am' && hour === 12) hour = 0;
+    result.setHours(hour, minute, 0, 0);
+  } else {
+    // No explicit time found - default to one hour from now so the reminder is still valid.
+    result.setTime(now.getTime() + 60 * 60_000);
+  }
+
+  if (/\btomorrow\b/i.test(text)) {
+    result.setDate(result.getDate() + 1);
+  } else if (!/\btoday\b/i.test(text) && result.getTime() <= now.getTime()) {
+    // An unqualified time that has already passed today means tomorrow.
+    result.setDate(result.getDate() + 1);
+  }
+
+  return result;
 }
 
 function extractTask(text: string): { title: string } {

@@ -18,7 +18,7 @@ describe('MockProvider', () => {
     expect(provider.supportsToolCalling()).toBe(true);
   });
 
-  it('proposes create_reminder for a reminder-shaped request', async () => {
+  it('proposes create_reminder for a reminder-shaped request with a valid ISO datetime', async () => {
     const res = await provider.generateResponse({
       messages: [{ role: 'user', content: 'Remind me to study Data Structures at 7 PM.' }],
       tools: TOOLS,
@@ -26,6 +26,12 @@ describe('MockProvider', () => {
     expect(res.toolCalls).toHaveLength(1);
     expect(res.toolCalls[0]?.name).toBe('create_reminder');
     expect(res.finishReason).toBe('tool_calls');
+    const args = res.toolCalls[0]?.arguments as { title: string; scheduledAt: string };
+    // Must be a real ISO 8601 datetime the create_reminder tool schema will accept, not a raw
+    // phrase like "7 PM" - a regression test for a bug caught during manual smoke testing.
+    expect(() => new Date(args.scheduledAt).toISOString()).not.toThrow();
+    expect(new Date(args.scheduledAt).getHours()).toBe(19);
+    expect(args.title.toLowerCase()).toContain('data structures');
   });
 
   it('proposes create_task for a task-shaped request', async () => {

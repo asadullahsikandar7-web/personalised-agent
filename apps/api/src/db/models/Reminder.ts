@@ -25,7 +25,11 @@ const reminderSchema = new Schema(
     lastTriggeredAt: { type: Date, default: null },
     nextTriggerAt: { type: Date, default: null, index: true },
     jobId: { type: String, default: null },
-    idempotencyKey: { type: String, default: null, unique: true, sparse: true },
+    // Not database-unique: the key is always prefixed with this reminder's own _id (see
+    // modules/schedules/service.ts), so it can never collide across documents. Real idempotency
+    // for job execution comes from BullMQ's own jobId uniqueness, not a Mongo constraint - and a
+    // `unique` index here would reject multiple reminders sharing the schema default (null).
+    idempotencyKey: { type: String, default: null },
   },
   { timestamps: true },
 );
