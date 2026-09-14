@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify, { type FastifyInstance, type FastifyBaseLogger } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -33,9 +33,8 @@ export interface BuildAppOptions {
 
 export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyInstance> {
   const app = Fastify({
-    logger,
+    loggerInstance: logger as unknown as FastifyBaseLogger,
     trustProxy: true,
-    disableRequestLogging: env.NODE_ENV === 'test',
   });
 
   await app.register(requestContextPlugin);

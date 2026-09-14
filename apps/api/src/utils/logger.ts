@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { env, isProduction } from '../config/env';
+import { env, isProduction, isTest } from '../config/env';
 
 /** Fields that must never be logged, even accidentally. */
 const REDACT_PATHS = [
@@ -15,7 +15,7 @@ const REDACT_PATHS = [
 ];
 
 export const logger = pino({
-  level: env.LOG_LEVEL,
+  level: isTest ? 'silent' : env.LOG_LEVEL,
   redact: { paths: REDACT_PATHS, censor: '[REDACTED]' },
-  transport: isProduction ? undefined : { target: 'pino-pretty', options: { colorize: true } },
+  transport: isProduction || isTest ? undefined : { target: 'pino-pretty', options: { colorize: true } },
 });

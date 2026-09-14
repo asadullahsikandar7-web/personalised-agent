@@ -40,7 +40,8 @@ export function toReminderDTO(doc: ReminderDoc): ReminderDTO {
 /** Schedules (or reschedules) the BullMQ delayed job that will fire this reminder. */
 async function enqueueReminderJob(doc: ReminderDoc): Promise<void> {
   const delayMs = Math.max(0, doc.nextTriggerAt!.getTime() - Date.now());
-  const idempotencyKey = `${doc._id.toString()}:${doc.nextTriggerAt!.getTime()}`;
+  // BullMQ job ids may not contain ":", so idempotency keys use "-" as the separator.
+  const idempotencyKey = `${doc._id.toString()}-${doc.nextTriggerAt!.getTime()}`;
   const job = await getReminderQueue().add(
     'trigger-reminder',
     { reminderId: doc._id.toString(), userId: doc.userId.toString(), idempotencyKey },
