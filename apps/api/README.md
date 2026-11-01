@@ -10,8 +10,8 @@ talks to OpenAI/Ollama - see the root `docs/` for full documentation, especially
 cp ../../.env.example .env   # then edit as needed - see docs/environment.md
 pnpm dev            # tsx watch, http://localhost:4000, Swagger UI at /docs
 pnpm dev:worker      # reminder worker, separate process/terminal
-pnpm build && pnpm start   # production build
-pnpm db:seed         # demo data - see docs/setup.md for credentials
+  # production build
+pnpm db:seed    pnpm build && pnpm start      # demo data - see docs/setup.md for credentials
 pnpm test            # vitest - needs local Redis; Mongo is ephemeral (mongodb-memory-server)
 pnpm typecheck
 pnpm lint

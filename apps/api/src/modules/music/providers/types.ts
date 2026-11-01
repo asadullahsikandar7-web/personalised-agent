@@ -7,6 +7,9 @@ export interface MusicTrack {
   album?: string;
   durationSeconds?: number;
   artworkUrl?: string;
+  /** Direct streamable audio URL, when the provider serves one (e.g. Jamendo). Absent for
+   *  providers where playback happens through an embedded player instead (e.g. YouTube). */
+  streamUrl?: string;
 }
 
 export interface PlaybackState {

@@ -43,8 +43,13 @@ describe('computeNextTrigger', () => {
     expect(next?.getUTCDate()).toBe(15);
   });
 
-  it('does not evaluate custom cron expressions yet (documented limitation)', () => {
-    const result = computeNextTrigger(new Date(), 'UTC', new Date(), { type: 'custom', cronExpression: '0 9 * * 1', interval: 1 });
-    expect(result).toBeNull();
+  it('evaluates custom cron expressions in the reminder timezone', () => {
+    const result = computeNextTrigger(
+      new Date('2025-01-05T12:00:00.000Z'),
+      'UTC',
+      new Date('2025-01-05T12:00:00.000Z'),
+      { type: 'custom', cronExpression: '0 9 * * 1', interval: 1 },
+    );
+    expect(result?.toISOString()).toBe('2025-01-06T09:00:00.000Z');
   });
 });

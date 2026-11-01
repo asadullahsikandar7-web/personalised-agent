@@ -9,6 +9,7 @@ const trackSchema = new Schema(
     album: { type: String },
     durationSeconds: { type: Number },
     artworkUrl: { type: String },
+    streamUrl: { type: String },
   },
   { _id: false },
 );

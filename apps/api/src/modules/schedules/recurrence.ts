@@ -1,11 +1,11 @@
+import { parseExpression } from 'cron-parser';
 import { DateTime } from 'luxon';
 import type { RecurrenceRuleInput } from '@personal-agent/shared';
 
 /**
  * Computes the next occurrence strictly after `after`, given the original scheduled instant
  * and a recurrence rule, in the reminder's IANA timezone. Returns null for one-time reminders
- * (recurrenceRule undefined or type 'none') and for unsupported custom cron expressions (those
- * are treated as one-time until a full cron parser is wired in - see docs/scheduling.md).
+ * (recurrenceRule undefined or type 'none') or invalid custom expressions.
  */
 export function computeNextTrigger(
   scheduledAt: Date,
@@ -51,10 +51,17 @@ export function computeNextTrigger(
       }
       return null;
     }
-    case 'custom':
-      // Custom cron expressions are accepted and stored for forward compatibility, but are not
-      // yet evaluated - documented limitation, see docs/known-platform-limitations.md.
-      return null;
+    case 'custom': {
+      if (!recurrenceRule.cronExpression) return null;
+      try {
+        return parseExpression(recurrenceRule.cronExpression, {
+          currentDate: after,
+          tz: zone,
+        }).next().toDate();
+      } catch {
+        return null;
+      }
+    }
     default:
       return null;
   }

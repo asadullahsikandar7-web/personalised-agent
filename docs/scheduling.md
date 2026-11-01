@@ -31,9 +31,8 @@ BullMQ delivers the job to workers/reminder-worker.ts when it's due
   `interval` weeks
 - `monthly` - on `dayOfMonth` (defaults to the original day, clamped to the shorter month),
   every `interval` months
-- `custom` - a `cronExpression` is accepted and stored for forward compatibility, but **is not
-  yet evaluated** - a custom-recurrence reminder is currently treated as one-time. See
-  `docs/known-platform-limitations.md`.
+- `custom` - evaluates the supplied 5-field cron expression in the reminder's IANA timezone.
+  Invalid expressions are treated as one-time reminders.
 
 All recurrence math (`recurrence.ts`) is timezone-aware via `luxon`, computed in the reminder's
 stored IANA `timezone`, not the server's local time or UTC.

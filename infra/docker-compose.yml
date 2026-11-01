@@ -57,6 +57,12 @@ services:
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:4b}
       CORS_ORIGINS: "*"
+      WEB_SEARCH_PROVIDER: ${WEB_SEARCH_PROVIDER:-}
+      WEB_SEARCH_API_KEY: ${WEB_SEARCH_API_KEY:-}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-Personal Agent <onboarding@resend.dev>}
+      YOUTUBE_API_KEY: ${YOUTUBE_API_KEY:-}
+      JAMENDO_CLIENT_ID: ${JAMENDO_CLIENT_ID:-}
       LOG_LEVEL: info
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:4000/api/health', r => process.exit(r.statusCode===200?0:1)).on('error',()=>process.exit(1))"]

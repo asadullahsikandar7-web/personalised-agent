@@ -3,6 +3,8 @@ import { createQueueConnection } from '../queues/connection';
 import { REMINDER_QUEUE_NAME, type ReminderJobData } from '../queues/reminder-queue';
 import { processReminderTrigger } from '../modules/schedules/service';
 import { createNotification } from '../modules/notifications/service';
+import { sendExpoPush } from '../modules/notifications/push';
+import { getOrCreatePreferences } from '../modules/users/service';
 import { logActivity } from '../modules/activity/service';
 import { logger } from '../utils/logger';
 
@@ -33,6 +35,12 @@ export function startReminderWorker(): Worker<ReminderJobData> {
         body: reminder.title,
         relatedEntityId: reminderId,
       });
+
+      const prefs = await getOrCreatePreferences(userId);
+      if (prefs.notificationsEnabled && prefs.pushToken && prefs.defaultReminderChannel === 'push') {
+        await sendExpoPush(prefs.pushToken, 'Reminder', reminder.title, { reminderId });
+      }
+
       await logActivity(userId, {
         action: 'reminder.triggered',
         category: 'system',

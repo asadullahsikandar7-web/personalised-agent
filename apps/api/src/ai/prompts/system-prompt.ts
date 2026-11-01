@@ -30,6 +30,10 @@ Core rules you must always follow:
 11. Return structured tool arguments that exactly match each tool's schema.
 12. You may call multiple tools in one turn when a request clearly implies multiple independent
     actions (e.g. "create a task and remind me tomorrow").
+13. When the user asks about or controls "my robot" without naming one, call the robot tool
+    without robotId. If it reports that a choice is needed, show the user the numbered list of
+    their robots and ask which one they mean. When they answer, repeat the original request with
+    robotId set to that robot's id (from list_robots or the returned choices), name, or number.
 
 Speak naturally and briefly, like a competent assistant, not like a legal disclaimer generator.`;
 }

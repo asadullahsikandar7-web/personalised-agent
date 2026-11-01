@@ -1,0 +1,82 @@
+import getpass
+import json
+import os
+from pathlib import Path
+
+import requests
+
+BASE_URL = "http://192.168.7.110:4000"
+OUTPUT_FILE = Path("robo-pairing.json")
+
+
+def response_data(response):
+    response.raise_for_status()
+    result = response.json()
+
+    # Support the API's success wrapper.
+    data = result.get("data", result)
+    if isinstance(data, dict) and isinstance(data.get("data"), dict):
+        data = data["data"]
+
+    if not isinstance(data, dict):
+        raise RuntimeError("Unexpected API response format.")
+
+    return data
+
+
+def main():
+    email = input("Personal Agent account email: ").strip()
+    password = getpass.getpass("Personal Agent password: ")
+
+    login = requests.post(
+        f"{BASE_URL}/api/auth/login",
+        json={"email": email, "password": password},
+        timeout=15,
+    )
+    auth = response_data(login)
+    access_token = auth.get("accessToken")
+
+    if not access_token:
+        raise RuntimeError("Login response did not contain accessToken.")
+
+    print("Login successful.")
+
+    registration = requests.post(
+        f"{BASE_URL}/api/robots",
+        headers={"Authorization": f"Bearer {access_token}"},
+        json={"name": "Robo Freenove Pi"},
+        timeout=15,
+    )
+    robot_data = response_data(registration)
+
+    robot = robot_data.get("robot")
+    pairing_token = robot_data.get("pairingToken")
+
+    if not isinstance(robot, dict) or not pairing_token:
+        raise RuntimeError(
+            "Registration response did not contain robot and pairingToken. "
+            "Inspect the response structure without sharing secrets."
+        )
+
+    saved_data = {
+        "base_url": BASE_URL,
+        "device_id": robot.get("deviceId"),
+        "pairing_token": pairing_token,
+        "robot_name": robot.get("name", "Robo Freenove Pi"),
+    }
+
+    if not saved_data["device_id"]:
+        raise RuntimeError("Registration response has no deviceId.")
+
+    OUTPUT_FILE.write_text(json.dumps(saved_data, indent=2) + "\n")
+    os.chmod(OUTPUT_FILE, 0o600)
+
+    print("\nRobot registered successfully.")
+    print("Robot name:", saved_data["robot_name"])
+    print("Device ID:", saved_data["device_id"])
+    print("Pairing token: saved securely to", OUTPUT_FILE)
+    print("\nKeep this file private. Do not commit it to Git.")
+
+
+if __name__ == "__main__":
+    main()

@@ -5,5 +5,7 @@ export * from './task';
 export * from './reminder';
 export * from './tool';
 export * from './music';
+export * from './music-search';
+export * from './robot';
 export * from './notification';
 export * from './activity';

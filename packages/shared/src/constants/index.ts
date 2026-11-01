@@ -5,3 +5,5 @@ export * from './schedules';
 export * from './agent';
 export * from './notifications';
 export * from './music';
+export * from './music-search';
+export * from './robot';

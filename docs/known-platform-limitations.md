@@ -27,53 +27,56 @@ capability it doesn't have - where something can't be done, the tool/screen says
 
 ## Web search
 
-- The `web_search` tool always returns `NOT_CONFIGURED` unless `WEB_SEARCH_PROVIDER` and
-  `WEB_SEARCH_API_KEY` are both set - no provider was approved/available for this build, so it
-  was never wired up beyond the "not configured" honest response. See `docs/tool-development.md`
-  for how to add one.
+- The `web_search` tool is wired to the real Brave Search API
+  (`src/ai/tools/definitions/web-search.ts`) when `WEB_SEARCH_PROVIDER=brave` and
+  `WEB_SEARCH_API_KEY` are both set (get a free-tier key at brave.com/search/api). Without both
+  set, it honestly returns `NOT_CONFIGURED` rather than fabricating results. Any provider other
+  than `brave` still returns `NOT_IMPLEMENTED` - see `docs/tool-development.md` to add one.
 
 ## Sending messages
 
-- `send_message` always requires approval, and once approved, honestly reports that nothing was
-  actually delivered - no email/SMS/chat provider is configured in this build. The approval flow
-  itself (create -> review -> approve/reject -> execute) is fully real and tested; only the final
-  delivery step is a documented gap, not a fake success.
+- `send_message` always requires approval. Once approved, if the recipient is an email address
+  and `RESEND_API_KEY` is set, it actually delivers the message via Resend
+  (`src/modules/notifications/email.ts`). Non-email recipients (SMS/chat) and any request when
+  Resend isn't configured still honestly report that nothing was sent - no SMS/chat provider is
+  wired up in this build. Resend's shared `onboarding@resend.dev` sandbox sender only delivers to
+  the Resend account's own verified email; sending to arbitrary recipients requires verifying a
+  domain in Resend and setting `EMAIL_FROM` to an address on it.
 
 ## Push notifications
 
 - In-app notifications (shown on the Notifications screen, backed by the `Notification` model)
   work end-to-end today for every triggered reminder.
-- Actual OS push notifications (a reminder firing while the app is closed) require: (a) the
-  mobile app registering for an Expo push token (`expo-notifications`' `getExpoPushTokenAsync`,
-  which itself requires a physical device or specific emulator/Play-Services setup - it does not
-  work on an emulator without Google Play Services correctly configured) and sending it to
-  `PATCH /api/users/me/preferences`, and (b) the reminder worker calling Expo's push API with
-  that token when a reminder triggers. The `pushToken` field and `PUSH_NOTIFICATION_PROVIDER` env
-  var exist as the foundation; the worker does not yet make that push call. Local notifications
-  scheduled directly on-device via `expo-notifications` (which work without any of the above) are
-  also not yet wired into the reminder screens - today, "did I get reminded" surfaces through the
-  in-app Notifications screen, which requires the app to be open (or backgrounded with polling)
-  to see promptly.
-
-## Custom recurrence
-
-- `recurrenceRule.type: 'custom'` accepts and stores a `cronExpression`, but it is not evaluated
-  - such a reminder currently behaves as one-time. `daily`/`weekly`/`monthly` are fully
-  implemented and timezone-aware.
+- Actual OS push notifications (a reminder firing while the app is closed) are now fully wired:
+  granting notification permission on the Permissions screen calls
+  `registerForPushNotificationsAsync` (`src/services/push-notifications.ts`), which requests an
+  Expo push token and saves it via `PATCH /api/users/me/preferences`; the reminder worker
+  (`reminder-worker.ts`) calls Expo's push API (`src/modules/notifications/push.ts`) with that
+  token whenever `defaultReminderChannel` is `push`. What this still depends on, honestly:
+  - **An EAS `projectId`.** `getExpoPushTokenAsync` cannot mint a token without one configured in
+    `app.json` (`extra.eas.projectId`), which requires an Expo account and running `eas init`.
+    Without it, registration no-ops and logs a warning rather than faking a token.
+  - **A physical device or an emulator image with Google Play Services correctly configured** -
+    Android remote-notification support was removed from Expo Go as of SDK 53 either way, so this
+    needs a development build regardless.
+  - Local notifications scheduled directly on-device via `expo-notifications` (which would work
+    without either of the above) are still not wired into the reminder screens - "did I get
+    reminded" without a real push token still surfaces only through the in-app Notifications
+    screen.
 
 ## Password reset email delivery
 
 - `POST /api/auth/forgot-password` generates and stores a real, single-use, time-limited reset
-  token, but no email provider is configured to deliver it. In non-production environments the
-  response includes `devResetToken` specifically so this can be tested locally without email -
-  see `docs/setup.md`. In production this would need a transactional email provider wired into
-  that route.
+  token, and now sends it via Resend (same `EMAIL_FROM`/`RESEND_API_KEY` config as `send_message`
+  above) as a `personalagent://auth/reset-password?token=...` deep link when `RESEND_API_KEY` is
+  set. Without it, no email is sent. In non-production environments the response also includes
+  `devResetToken` regardless, so this can still be tested locally without email - see
+  `docs/setup.md`.
 
 ## OpenAI provider
 
-- Implemented against the official SDK's documented types, but not exercised against a live
-  API key in the environment this was built in (none was available/approved to test with). See
-  `docs/ai-provider.md`.
+- Implemented against the official SDK's documented types. Set `AI_PROVIDER=openai` and
+  `OPENAI_API_KEY` to use it instead of the deterministic mock provider.
 
 ## Emulator vs. physical device
 

@@ -12,3 +12,5 @@ export * from './MusicPlayback';
 export * from './Notification';
 export * from './UserPreference';
 export * from './Note';
+export * from './Robot';
+export * from './RobotCommand';

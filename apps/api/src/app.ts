@@ -11,6 +11,7 @@ import authPlugin from './plugins/auth';
 import errorHandlerPlugin from './plugins/error-handler';
 import requestContextPlugin from './plugins/request-context';
 import swaggerPlugin from './plugins/swagger';
+import websocketPlugin from './plugins/websocket';
 
 import authRoutes from './modules/auth/routes';
 import usersRoutes from './modules/users/routes';
@@ -21,10 +22,12 @@ import tasksRoutes from './modules/tasks/routes';
 import schedulesRoutes from './modules/schedules/routes';
 import toolsRoutes from './modules/tools/routes';
 import musicRoutes from './modules/music/routes';
+import musicSearchRoutes from './modules/music-search/routes';
 import notificationsRoutes from './modules/notifications/routes';
 import activityRoutes from './modules/activity/routes';
 import notesRoutes from './modules/notes/routes';
 import healthRoutes from './modules/health/routes';
+import robotsRoutes, { robotWsRoutes } from './modules/robots/routes';
 
 export interface BuildAppOptions {
   /** Skip connecting to Mongo/Redis - used by unit tests that mock the DB layer. */
@@ -55,6 +58,7 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   }
 
   await app.register(authPlugin);
+  await app.register(websocketPlugin);
   if (env.NODE_ENV !== 'test') {
     await app.register(swaggerPlugin);
   }
@@ -68,9 +72,12 @@ export async function buildApp(options: BuildAppOptions = {}): Promise<FastifyIn
   await app.register(schedulesRoutes, { prefix: '/api/reminders' });
   await app.register(toolsRoutes, { prefix: '/api/tools' });
   await app.register(musicRoutes, { prefix: '/api/music' });
+  await app.register(musicSearchRoutes, { prefix: '/api/music-search' });
   await app.register(notificationsRoutes, { prefix: '/api/notifications' });
   await app.register(activityRoutes, { prefix: '/api/activity' });
   await app.register(notesRoutes, { prefix: '/api/notes' });
+  await app.register(robotsRoutes, { prefix: '/api/robots' });
+  await app.register(robotWsRoutes, { prefix: '/ws/robot' });
   await app.register(healthRoutes, { prefix: '/api' });
 
   return app;

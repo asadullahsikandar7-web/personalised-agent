@@ -28,6 +28,12 @@ const envSchema = z.object({
   WEB_SEARCH_API_KEY: z.string().default(''),
   WEB_SEARCH_PROVIDER: z.string().default(''),
 
+  RESEND_API_KEY: z.string().default(''),
+  EMAIL_FROM: z.string().default('Personal Agent <onboarding@resend.dev>'),
+
+  YOUTUBE_API_KEY: z.string().default(''),
+  JAMENDO_CLIENT_ID: z.string().default(''),
+
   LOG_LEVEL: z.string().default('info'),
 });
 

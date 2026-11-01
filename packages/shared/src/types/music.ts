@@ -7,6 +7,8 @@ export interface MusicTrackDTO {
   album?: string;
   durationSeconds?: number;
   artworkUrl?: string;
+  /** Direct streamable audio URL, when the provider serves one (e.g. Jamendo). */
+  streamUrl?: string;
 }
 
 export interface PlaybackStateDTO {

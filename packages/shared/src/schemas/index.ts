@@ -5,3 +5,5 @@ export * from './reminder';
 export * from './agent';
 export * from './note';
 export * from './music';
+export * from './music-search';
+export * from './robot';

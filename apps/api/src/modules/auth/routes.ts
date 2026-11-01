@@ -9,10 +9,11 @@ import {
 import { parseOrThrow } from '../../middleware/validate';
 import { getUserId } from '../../middleware/current-user';
 import { sendSuccess } from '../../utils/response';
-import { isProduction } from '../../config/env';
+import { env, isProduction } from '../../config/env';
 import * as authService from './service';
 import { getUserOrThrow } from '../users/service';
 import { logActivity } from '../activity/service';
+import { sendEmail } from '../notifications/email';
 
 export default async function authRoutes(app: FastifyInstance) {
   app.post('/register', async (req, reply) => {
@@ -55,6 +56,14 @@ export default async function authRoutes(app: FastifyInstance) {
   app.post('/forgot-password', async (req, reply) => {
     const input = parseOrThrow(forgotPasswordSchema, req.body);
     const token = await authService.createPasswordResetToken(input.email);
+    if (token) {
+      const resetLink = `${env.MOBILE_APP_SCHEME}://auth/reset-password?token=${token}`;
+      await sendEmail(
+        input.email,
+        'Reset your Personal Agent password',
+        `<p>Tap the link below to reset your password. This link expires in 30 minutes.</p><p><a href="${resetLink}">${resetLink}</a></p><p>If you didn't request this, you can ignore this email.</p>`,
+      );
+    }
     // Always respond the same way regardless of whether the email exists, to avoid user enumeration.
     sendSuccess(reply, {
       message: 'If an account with that email exists, a password reset link has been sent.',

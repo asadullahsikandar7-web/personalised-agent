@@ -18,3 +18,4 @@ ios/
 apps/api/dist/
 apps/mobile/dist/
 .vscode/*.log
+robo-pairing.json

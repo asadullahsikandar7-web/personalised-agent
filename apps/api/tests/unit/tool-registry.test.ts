@@ -76,8 +76,19 @@ describe('default application tool registry', () => {
       'music_next',
       'music_previous',
       'music_search',
+      'search_music_catalog',
       'get_activity',
       'send_message',
+      'get_robot_status',
+      'get_robot_battery',
+      'get_robot_sensors',
+      'get_robot_distance',
+      'move_robot',
+      'turn_robot',
+      'stop_robot',
+      'set_robot_speed',
+      'capture_robot_image',
+      'get_robot_camera_status',
     ];
     for (const name of expected) {
       expect(names).toContain(name);
@@ -90,5 +101,16 @@ describe('default application tool registry', () => {
     expect(registry.get('delete_note')?.permissionLevel).toBe('approval_required');
     expect(registry.get('delete_memory')?.permissionLevel).toBe('approval_required');
     expect(registry.get('send_message')?.permissionLevel).toBe('approval_required');
+  });
+
+  it('marks robot movement tools restricted and read-only/stop tools safe', () => {
+    const registry = getToolRegistry();
+    expect(registry.get('move_robot')?.permissionLevel).toBe('restricted');
+    expect(registry.get('turn_robot')?.permissionLevel).toBe('restricted');
+    expect(registry.get('set_robot_speed')?.permissionLevel).toBe('restricted');
+    expect(registry.get('stop_robot')?.permissionLevel).toBe('safe');
+    expect(registry.get('get_robot_status')?.permissionLevel).toBe('safe');
+    expect(registry.get('get_robot_battery')?.permissionLevel).toBe('safe');
+    expect(registry.get('capture_robot_image')?.permissionLevel).toBe('safe');
   });
 });

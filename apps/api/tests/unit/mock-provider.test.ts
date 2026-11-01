@@ -8,6 +8,7 @@ const TOOLS: AIToolDefinition[] = [
   { name: 'remember_memory', description: 'd', parameters: {} },
   { name: 'get_current_datetime', description: 'd', parameters: {} },
   { name: 'music_play', description: 'd', parameters: {} },
+  { name: 'get_robot_status', description: 'd', parameters: {} },
 ];
 
 describe('MockProvider', () => {
@@ -79,5 +80,27 @@ describe('MockProvider', () => {
     });
     expect(res.toolCalls).toHaveLength(0);
     expect(res.content).toContain('Task "X" created.');
+  });
+
+  it('proposes get_robot_status for "give me status of my robot"', async () => {
+    const res = await provider.generateResponse({
+      messages: [{ role: 'user', content: 'Give me status of my robot' }],
+      tools: TOOLS,
+    });
+    expect(res.toolCalls.map((c) => c.name)).toEqual(['get_robot_status']);
+  });
+
+  it('re-runs the robot request with the chosen robot after asking which one', async () => {
+    const res = await provider.generateResponse({
+      messages: [
+        { role: 'user', content: 'Give me status of my robot' },
+        { role: 'assistant', content: 'You have 2 robots. Which one do you mean?\n1. Robo Freenove Pi (online)\n2. Robo (offline)' },
+        { role: 'user', content: 'Robo Freenove Pi' },
+      ],
+      tools: TOOLS,
+    });
+    expect(res.toolCalls).toHaveLength(1);
+    expect(res.toolCalls[0]?.name).toBe('get_robot_status');
+    expect(res.toolCalls[0]?.arguments).toEqual({ robotId: 'Robo Freenove Pi' });
   });
 });
