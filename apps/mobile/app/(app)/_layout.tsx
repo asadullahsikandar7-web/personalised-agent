@@ -19,6 +19,8 @@ export default function AppLayout() {
       <Stack.Screen name="reminders" options={{ title: 'Reminders' }} />
       <Stack.Screen name="memories" options={{ title: 'Memories' }} />
       <Stack.Screen name="music" options={{ title: 'Music' }} />
+      <Stack.Screen name="remote" options={{ title: 'Remote Control' }} />
+      <Stack.Screen name="music-search" options={{ title: 'Search Music Catalog' }} />
       <Stack.Screen name="activity" options={{ title: 'Activity' }} />
       <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
       <Stack.Screen name="profile" options={{ title: 'Profile' }} />

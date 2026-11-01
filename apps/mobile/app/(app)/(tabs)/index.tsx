@@ -69,6 +69,7 @@ export default function HomeScreen() {
     { label: 'Memories', emoji: '🧠', onPress: () => router.push('/(app)/memories') },
     { label: 'Music', emoji: '🎵', onPress: () => router.push('/(app)/music') },
     { label: 'Activity', emoji: '📜', onPress: () => router.push('/(app)/activity') },
+    { label: 'Robot Remote', emoji: '🎮', onPress: () => router.push('/(app)/remote') },
   ];
 
   return (

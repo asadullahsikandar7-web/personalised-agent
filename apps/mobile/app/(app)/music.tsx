@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { View, Text, Pressable, TextInput, FlatList } from 'react-native';
+import { View, Text, Pressable, TextInput, FlatList, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { tw } from '../../src/theme/tw';
-import { Card, Badge, EmptyState, LoadingState } from '../../src/components';
+import { Card, Badge, EmptyState, ErrorState, LoadingState, YoutubePlayer, JamendoAudioPlayer } from '../../src/components';
 import {
   useMusicState,
   useMusicPlay,
@@ -14,6 +15,7 @@ import {
 } from '../../src/hooks/useMusicState';
 
 export default function MusicScreen() {
+  const router = useRouter();
   const [query, setQuery] = useState('');
   const musicState = useMusicState();
   const play = useMusicPlay();
@@ -24,12 +26,28 @@ export default function MusicScreen() {
   const playTrack = usePlayTrack();
 
   const isPlaying = musicState.data?.state === 'playing';
+  const isYoutube = musicState.data?.provider === 'youtube';
+  const isJamendo = musicState.data?.provider === 'jamendo';
+  const currentTrack = musicState.data?.currentTrack;
 
   return (
     <SafeAreaView className={tw.screen} edges={['bottom']}>
       <View className="flex-1 px-5 pt-4">
         <Card className="items-center py-6 mb-5">
-          <Text className="text-5xl mb-3">🎵</Text>
+          {isJamendo && currentTrack?.streamUrl ? (
+            <JamendoAudioPlayer streamUrl={currentTrack.streamUrl} isPlaying={isPlaying} onEnded={() => next.mutate()} />
+          ) : null}
+          {isYoutube && currentTrack ? (
+            <View className="w-full mb-3">
+              <YoutubePlayer videoId={currentTrack.id} isPlaying={isPlaying} onEnded={() => next.mutate()} />
+            </View>
+          ) : currentTrack?.artworkUrl ? (
+            <View className="w-full mb-3" style={{ aspectRatio: 1, maxHeight: 200 }}>
+              <Image source={{ uri: currentTrack.artworkUrl }} style={{ flex: 1, borderRadius: 12 }} resizeMode="cover" />
+            </View>
+          ) : (
+            <Text className="text-5xl mb-3">🎵</Text>
+          )}
           {musicState.isLoading ? (
             <LoadingState label="Loading playback…" />
           ) : (
@@ -58,7 +76,15 @@ export default function MusicScreen() {
           )}
         </Card>
 
-        <Text className={`${tw.label} mb-2`}>Search catalog</Text>
+        <View className="flex-row items-center justify-between mb-2">
+          <Text className={tw.label}>{isJamendo ? 'Search Jamendo' : isYoutube ? 'Search YouTube' : 'Search catalog'}</Text>
+          <Text
+            className={`${tw.textMuted} text-xs underline`}
+            onPress={() => router.push('/music-search')}
+          >
+            Search all catalogs
+          </Text>
+        </View>
         <TextInput
           value={query}
           onChangeText={setQuery}
@@ -71,12 +97,17 @@ export default function MusicScreen() {
           data={search.data ?? []}
           keyExtractor={(item) => item.id}
           ListEmptyComponent={
-            query.trim() ? (
+            search.isError ? (
+              <ErrorState message={search.error.message} onRetry={() => search.refetch()} />
+            ) : query.trim() ? (
               <EmptyState title="No matches" description="Try a different search term." />
             ) : (
               <Text className={`${tw.textMuted} px-1`}>
-                Playback uses a local mock catalog for development. Real third-party music-app
-                control depends on platform APIs - see Settings → About for details.
+                {isJamendo
+                  ? 'Real full-track search and playback via Jamendo - independent, Creative Commons-licensed music.'
+                  : isYoutube
+                    ? 'Real YouTube search and playback via the official embedded player.'
+                    : 'Playback uses a local mock catalog for development. Real third-party music-app control depends on platform APIs - see Settings → About for details.'}
               </Text>
             )
           }

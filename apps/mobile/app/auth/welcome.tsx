@@ -1,9 +1,12 @@
-import { View, Text, SafeAreaView } from 'react-native';
-import { Link } from 'expo-router';
+import { View, Text } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { tw } from '../../src/theme/tw';
 import { Button } from '../../src/components';
 
 export default function WelcomeScreen() {
+  const router = useRouter();
+
   return (
     <SafeAreaView className={tw.screen}>
       <View className="flex-1 px-6 justify-between py-10">
@@ -19,12 +22,16 @@ export default function WelcomeScreen() {
         </View>
 
         <View className="gap-3">
-          <Link href="/auth/register" asChild>
-            <Button label="Create an account" onPress={() => {}} testID="get-started-button" />
-          </Link>
-          <Link href="/auth/login" asChild>
-            <Button label="I already have an account" onPress={() => {}} variant="secondary" />
-          </Link>
+          <Button
+            label="Create an account"
+            onPress={() => router.push('/auth/register')}
+            testID="get-started-button"
+          />
+          <Button
+            label="I already have an account"
+            onPress={() => router.push('/auth/login')}
+            variant="secondary"
+          />
         </View>
       </View>
     </SafeAreaView>

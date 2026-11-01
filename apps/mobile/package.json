@@ -4,13 +4,14 @@
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "eas-build-post-install": "pnpm --filter @personal-agent/shared build"
   },
   "private": true,
   "dependencies": {
@@ -35,18 +36,23 @@
     "react": "19.2.3",
     "react-hook-form": "^7.88.0",
     "react-native": "0.86.3",
+    "react-native-css-interop": "0.2.6",
     "react-native-gesture-handler": "~2.32.0",
     "react-native-reanimated": "4.5.1",
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "~4.26.0",
+    "react-native-webview": "13.16.1",
+    "react-native-worklets": "0.10.1",
     "zod": "^3.24.1",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@babel/plugin-transform-react-jsx": "^7.27.1",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^14.0.1",
-    "@types/jest": "^30.0.0",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.2.2",
+    "babel-preset-expo": "~57.0.11",
     "eslint": "^9.18.0",
     "jest": "^29.7.0",
     "jest-expo": "^57.0.5",

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Text, SafeAreaView, ScrollView } from 'react-native';
+import { Text, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';

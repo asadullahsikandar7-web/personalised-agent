@@ -43,7 +43,16 @@ export function Button({
       testID={testID}
       disabled={isDisabled}
       onPress={(e) => {
-        if (haptics) Haptics.selectionAsync().catch(() => undefined);
+        // A haptics failure (e.g. no vibration hardware on an emulator) must never prevent the
+        // actual action from running - expo-haptics has been observed to throw synchronously
+        // rather than only rejecting its promise on some Android emulator images.
+        if (haptics) {
+          try {
+            Haptics.selectionAsync().catch(() => undefined);
+          } catch {
+            // ignore - haptics are a nice-to-have, never load-bearing
+          }
+        }
         onPress(e);
       }}
       className={`${styles.container} ${fullWidth ? 'w-full' : ''} ${isDisabled ? 'opacity-50' : ''}`}

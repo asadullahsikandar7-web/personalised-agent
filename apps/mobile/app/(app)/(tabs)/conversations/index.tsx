@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { View, Text, FlatList, TextInput, Pressable } from 'react-native';
+import { View, Text, FlatList, TextInput, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { tw } from '../../../../src/theme/tw';
-import { Card, EmptyState, ErrorState, LoadingState } from '../../../../src/components';
+import { Card, EmptyState, ErrorState, LoadingState, QuickReplies } from '../../../../src/components';
+import { ROBOT_QUICK_COMMANDS } from '../../../../src/features/robot/commands';
 import { useConversations } from '../../../../src/hooks/useConversations';
 import { useSendAgentMessage } from '../../../../src/hooks/useSendAgentMessage';
 
@@ -13,12 +14,19 @@ export default function ConversationsScreen() {
   const conversationsQuery = useConversations(1, 50);
   const sendMessage = useSendAgentMessage();
 
-  const startNewConversation = async () => {
-    if (!draft.trim()) return;
-    const text = draft;
+  const [sendError, setSendError] = useState<string | null>(null);
+
+  const startNewConversation = async (text: string) => {
+    if (!text.trim() || sendMessage.isPending) return;
     setDraft('');
-    const data = await sendMessage.mutateAsync({ message: text, source: 'text' });
-    router.push(`/(app)/conversations/${data.conversationId}`);
+    setSendError(null);
+    try {
+      const data = await sendMessage.mutateAsync({ message: text, source: 'text' });
+      router.push(`/(app)/conversations/${data.conversationId}`);
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : 'Could not reach your agent. Please try again.');
+      setDraft(text);
+    }
   };
 
   return (
@@ -35,15 +43,31 @@ export default function ConversationsScreen() {
           placeholder="Start a new conversation…"
           placeholderTextColor="#8B8D98"
           className={`${tw.input} flex-1`}
-          onSubmitEditing={startNewConversation}
+          onSubmitEditing={() => startNewConversation(draft)}
+          returnKeyType="send"
         />
         <Pressable
-          onPress={startNewConversation}
+          onPress={() => startNewConversation(draft)}
           disabled={!draft.trim() || sendMessage.isPending}
-          className={`${tw.buttonPrimary} px-4 ${!draft.trim() ? 'opacity-40' : ''}`}
+          className={`${tw.buttonPrimary} px-4 ${!draft.trim() || sendMessage.isPending ? 'opacity-40' : ''}`}
         >
-          <Text className={tw.buttonPrimaryText}>Send</Text>
+          {sendMessage.isPending ? <ActivityIndicator color="#FFFFFF" /> : <Text className={tw.buttonPrimaryText}>Send</Text>}
         </Pressable>
+      </View>
+      {sendError && <Text className={`${tw.errorText} px-5 mb-2`}>{sendError}</Text>}
+
+      <View className="px-5 mb-2 flex-row items-center justify-between">
+        <Text className={tw.label}>Robot shortcuts</Text>
+        <Pressable onPress={() => router.push('/(app)/remote')} className={`${tw.pill} py-1.5`}>
+          <Text className={tw.pillText}>🎮 Remote control</Text>
+        </Pressable>
+      </View>
+      <View className="mb-4">
+        <QuickReplies
+          items={ROBOT_QUICK_COMMANDS.map((c) => ({ key: c.message, label: c.label }))}
+          onPick={(message) => void startNewConversation(message)}
+          disabled={sendMessage.isPending}
+        />
       </View>
 
       {conversationsQuery.isLoading ? (

@@ -1,6 +1,6 @@
 import '../src/theme/global.css';
 import { useEffect } from 'react';
-import { View, ActivityIndicator, Text } from 'react-native';
+import { View, ActivityIndicator, Text, LogBox } from 'react-native';
 import { Slot } from 'expo-router';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -12,6 +12,9 @@ import { useProtectedRoute } from '../src/navigation/useProtectedRoute';
 import { tw } from '../src/theme/tw';
 
 export { ErrorBoundary } from '../src/components/ErrorBoundary';
+
+// On a USB device this fires whenever `adb reverse` drops; its LogBox toast covers the tab bar.
+LogBox.ignoreLogs(['Failed to open DevTools']);
 
 function AppGate({ children }: { children: React.ReactNode }) {
   const restoreSession = useAuthStore((s) => s.restoreSession);

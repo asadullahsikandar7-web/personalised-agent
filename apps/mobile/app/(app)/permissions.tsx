@@ -1,9 +1,30 @@
 import { useCallback, useEffect, useState } from 'react';
 import { View, Text, ScrollView, Linking, Platform } from 'react-native';
-import * as Notifications from 'expo-notifications';
-import { ExpoSpeechRecognitionModule } from 'expo-speech-recognition';
 import { tw } from '../../src/theme/tw';
 import { Card, Badge, Button } from '../../src/components';
+import { registerForPushNotificationsAsync } from '../../src/services/push-notifications';
+import { useUpdateUserPreferences } from '../../src/hooks/useUserPreferences';
+
+// Both of these ship real native code and can throw merely by being imported when unavailable
+// (expo-speech-recognition: no third-party native modules in Expo Go; expo-notifications:
+// Android remote-notification support was removed from Expo Go as of SDK 53). Loading them
+// lazily behind a try/catch keeps this whole screen from crashing on import - see
+// docs/known-platform-limitations.md.
+let ExpoSpeechRecognitionModule: typeof import('expo-speech-recognition').ExpoSpeechRecognitionModule | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- must be lazy, see above
+  ExpoSpeechRecognitionModule = require('expo-speech-recognition').ExpoSpeechRecognitionModule;
+} catch {
+  ExpoSpeechRecognitionModule = null;
+}
+
+let Notifications: typeof import('expo-notifications') | null = null;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports -- must be lazy, see above
+  Notifications = require('expo-notifications');
+} catch {
+  Notifications = null;
+}
 
 type PermStatus = 'granted' | 'denied' | 'undetermined' | 'unavailable';
 
@@ -16,16 +37,30 @@ function toneFor(status: PermStatus): 'success' | 'danger' | 'warning' {
 export default function PermissionsScreen() {
   const [micStatus, setMicStatus] = useState<PermStatus>('undetermined');
   const [notifStatus, setNotifStatus] = useState<PermStatus>('undetermined');
+  const updatePreferences = useUpdateUserPreferences();
 
   const refresh = useCallback(async () => {
-    try {
-      const mic = await ExpoSpeechRecognitionModule.getPermissionsAsync();
-      setMicStatus(mic.granted ? 'granted' : mic.canAskAgain ? 'undetermined' : 'denied');
-    } catch {
+    if (!ExpoSpeechRecognitionModule) {
       setMicStatus('unavailable');
+    } else {
+      try {
+        const mic = await ExpoSpeechRecognitionModule.getPermissionsAsync();
+        setMicStatus(mic.granted ? 'granted' : mic.canAskAgain ? 'undetermined' : 'denied');
+      } catch {
+        setMicStatus('unavailable');
+      }
     }
-    const notif = await Notifications.getPermissionsAsync();
-    setNotifStatus(notif.granted ? 'granted' : notif.canAskAgain ? 'undetermined' : 'denied');
+
+    if (!Notifications) {
+      setNotifStatus('unavailable');
+    } else {
+      try {
+        const notif = await Notifications.getPermissionsAsync();
+        setNotifStatus(notif.granted ? 'granted' : notif.canAskAgain ? 'undetermined' : 'denied');
+      } catch {
+        setNotifStatus('unavailable');
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -33,6 +68,7 @@ export default function PermissionsScreen() {
   }, [refresh]);
 
   const requestMic = async () => {
+    if (!ExpoSpeechRecognitionModule) return;
     try {
       const result = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
       setMicStatus(result.granted ? 'granted' : 'denied');
@@ -42,8 +78,19 @@ export default function PermissionsScreen() {
   };
 
   const requestNotifications = async () => {
-    const result = await Notifications.requestPermissionsAsync();
-    setNotifStatus(result.granted ? 'granted' : 'denied');
+    if (!Notifications) return;
+    try {
+      const result = await Notifications.requestPermissionsAsync();
+      setNotifStatus(result.granted ? 'granted' : 'denied');
+      if (result.granted) {
+        const pushToken = await registerForPushNotificationsAsync();
+        if (pushToken) {
+          updatePreferences.mutate({ pushToken, defaultReminderChannel: 'push' });
+        }
+      }
+    } catch {
+      setNotifStatus('unavailable');
+    }
   };
 
   return (
@@ -80,12 +127,17 @@ export default function PermissionsScreen() {
         </View>
         <Text className={`${tw.textSecondary} text-sm mb-3`}>
           Used to alert you about reminders, approval requests, and tool failures.
+          {notifStatus === 'unavailable'
+            ? ' Remote push notifications are unavailable in Expo Go as of SDK 53 - local, in-app notifications still work in a development build.'
+            : ''}
         </Text>
-        <Button
-          label={notifStatus === 'denied' ? 'Open settings' : 'Request permission'}
-          variant="secondary"
-          onPress={notifStatus === 'denied' ? () => Linking.openSettings() : requestNotifications}
-        />
+        {notifStatus !== 'unavailable' && (
+          <Button
+            label={notifStatus === 'denied' ? 'Open settings' : 'Request permission'}
+            variant="secondary"
+            onPress={notifStatus === 'denied' ? () => Linking.openSettings() : requestNotifications}
+          />
+        )}
       </Card>
 
       <Card>

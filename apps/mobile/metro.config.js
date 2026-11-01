@@ -7,12 +7,13 @@ const workspaceRoot = path.resolve(projectRoot, '../..');
 
 const config = getDefaultConfig(projectRoot);
 
-// Monorepo support: watch the workspace root and resolve packages from both node_modules trees.
+// Monorepo support: watch the workspace root (so changes to packages/shared trigger a rebuild)
+// and let Metro follow pnpm's symlinks into its content-addressable store - this is the minimal,
+// officially-documented setup and, unlike a custom nodeModulesPaths override, doesn't risk
+// Metro resolving a different (and possibly incomplete) copy of a package than the one Babel's
+// import actually points at.
 config.watchFolders = [workspaceRoot];
-config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, 'node_modules'),
-  path.resolve(workspaceRoot, 'node_modules'),
-];
+config.resolver.unstable_enableSymlinks = true;
 config.resolver.disableHierarchicalLookup = false;
 
 module.exports = withNativeWind(config, { input: './src/theme/global.css' });

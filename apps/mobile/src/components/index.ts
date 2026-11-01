@@ -7,3 +7,6 @@ export * from './LoadingState';
 export * from './ScreenHeader';
 export * from './Badge';
 export * from './ErrorBoundary';
+export * from './YoutubePlayer';
+export * from './JamendoAudioPlayer';
+export * from './QuickReplies';
